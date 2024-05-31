@@ -4,8 +4,9 @@ from streamlit_option_menu import option_menu
 from model_page import UFCModelPredictor
 
 def show_home():
-    st.title("Home Page")
-    st.write("Welcome to the UFC Prediction Tool!")
+    st.title("Welcome to the UFC Prediction Tool!")
+    st.header("By: Varun, Akshaj, Devon, Bhavesha, Ayush, Aditya, Aashritha, and Luis")
+
 
 def show_model_page():
     st.title("UFC Prediction Tool 🥊")
@@ -67,6 +68,7 @@ def show_prediction_page():
         if len(combined_features) == 30:
             winner = predictor.predict_winner(fighter_r, fighter_b)
             st.write(f'The predicted winner is: {winner}')
+
         else:
             st.write(f"Error: Combined features length is {len(combined_features)}, expected 30.")
 
