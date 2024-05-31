@@ -44,30 +44,39 @@ def show_prediction_page():
     with col1:
         fighter_r_name = st.selectbox("Select Red Fighter", options=fighter_names)
         fighter_r_index = fighter_names.index(fighter_r_name)
+        
         fighter_r = fighters.iloc[fighter_r_index].values[:15].tolist()
-
+        st.image(f'ufc_images/{fighter_r_name}.png')
         st.write("Adjust Red Fighter's Attributes")
-        for i, attr in enumerate(fighter_r):
-            if isinstance(attr, (int, float)):
-                if i < 3:
-                    fighter_r[i] = st.slider(f'Attribute {fighter_attributes[i]}', min_value=0, max_value=100, value=int(attr))
-
+        fighter_r[0] = st.slider(f'Attribute {fighter_attributes[0]} cm', min_value=0, max_value=400, value=int(fighter_r[3]))
+        fighter_r[1] = st.slider(f'Attribute {fighter_attributes[1]} cm', min_value=0, max_value=200, value=int(fighter_r[4]))
+        fighter_r[2] = st.slider(f'Attribute {fighter_attributes[2]} cm', min_value=0, max_value=400, value=int(fighter_r[5]))
     with col2:
-        fighter_b_index = st.selectbox("Select Blue Fighter", options=range(len(fighter_names)), format_func=lambda x: fighter_names[x])
+        fighter_b_name = st.selectbox("Select Blue Fighter", options=fighter_names)
+        #fighter_b_index = st.selectbox("Select Blue Fighter", options=range(len(fighter_names)), format_func=lambda x: fighter_names[x])
+        fighter_b_index = fighter_names.index(fighter_b_name)
         fighter_b = fighters.iloc[fighter_b_index].values[:15].tolist()
-        #st.image('path/to/blue_fighter_image.jpg')  # Replace with actual image path
-
+        #print(fighter_b_name)
+        st.image(f'ufc_images/{fighter_b_name}.png')  # Replace with actual image path
+        #print(fighter_b)
         st.write("Adjust Blue Fighter's Attributes")
-        for i, attr in enumerate(fighter_b):
-            if isinstance(attr, (int, float)):
-                if i < 3:
-                    fighter_b[i] = st.slider(f'Attribute {fighter_attributes[i]}', min_value=0, max_value=100, value=int(attr), key=f'blue_{i}')
+        # for i, _ in enumerate(fighter_b):
+        #     attr = fighter_b[i+3]
+        #     if isinstance(attr, (int, float)):
+        #         if i < 3:
+        #             fighter_b[i] = st.slider(f'Attribute {fighter_attributes[i]}', min_value=0, max_value=200, value=int(attr), key=f'blue_{i}')
+        fighter_b[0] = st.slider(f'Attribute {fighter_attributes[0]} cm', min_value=0, max_value=400, value=int(fighter_b[3]), key=f'blue_{0}')
+        fighter_b[1] = st.slider(f'Attribute {fighter_attributes[1]} cm', min_value=0, max_value=200, value=int(fighter_b[4]), key=f'blue_{1}')
+        fighter_b[2] = st.slider(f'Attribute {fighter_attributes[2]} cm', min_value=0, max_value=400, value=int(fighter_b[5]), key=f'blue_{2}')
 
     if st.button('Predict Winner'):
         combined_features = fighter_r + fighter_b  # Ensure we have 30 features
         if len(combined_features) == 30:
             winner = predictor.predict_winner(fighter_r, fighter_b)
-            st.write(f'The predicted winner is: {winner}')
+            if winner == fighter_r:
+                st.write(f'The predicted winner is: {fighter_r_name}')
+            else:
+                st.write(f'The predicted winner is: {fighter_b_name}')
 
         else:
             st.write(f"Error: Combined features length is {len(combined_features)}, expected 30.")
