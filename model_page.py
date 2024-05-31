@@ -51,19 +51,43 @@ class UFCModelPredictor:
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
-    def test_models(self):
+    def test_models(self, silent=False):
+        
+        self.results = {}
         for name, model in self.models.items():
-            model.fit(self.X_train, self.y_train)
-            y_pred = model.predict(self.X_test)
-            accuracy = accuracy_score(self.y_test, y_pred)
+            accuracy = self.evaluate_model(model)
             self.results[name] = accuracy
-            st.write(f'{name} Accuracy: {accuracy:.4f}')
+            if not silent:
+                st.write(f'{name} Accuracy: {accuracy:.4f}')
+
 
         self.best_model = max(self.results, key=self.results.get)
-        st.write(f'Best Model: {self.best_model} with Accuracy: {self.results[self.best_model]:.4f}')
-
+        
+    def evaluate_model(self, model):
+        model.fit(self.X_train, self.y_train)
+        predictions = model.predict(self.X_test)
+        return accuracy_score(self.y_test, predictions)
+    
     def predict_winner(self, fighter_r, fighter_b):
-        data = [fighter_r + fighter_b]
+        fighter_r_columns = ['wins_r', 'losses_r', 'draws_r', 'height_cm_r', 'weight_in_kg_r', 'reach_in_cm_r', 'stance_r', 
+                             'significant_strikes_landed_per_minute_r', 'significant_striking_accuracy_r', 
+                             'significant_strikes_absorbed_per_minute_r', 'significant_strike_defence_r', 
+                             'average_takedowns_landed_per_15_minutes_r', 'takedown_accuracy_r', 'takedown_defense_r', 
+                             'average_submissions_attempted_per_15_minutes_r']
+    
+        fighter_b_columns = ['wins_b', 'losses_b', 'draws_b', 'height_cm_b', 'weight_in_kg_b', 'reach_in_cm_b', 'stance_b', 
+                             'significant_strikes_landed_per_minute_b', 'significant_striking_accuracy_b', 
+                             'significant_strikes_absorbed_per_minute_b', 'significant_strike_defence_b', 
+                             'average_takedowns_landed_per_15_minutes_b', 'takedown_accuracy_b', 'takedown_defense_b', 
+                             'average_submissions_attempted_per_15_minutes_b']
+
+        combined_features = fighter_r + fighter_b
+
+        # Correct the condition check: len(fighter_r_columns) + len(fighter_b_columns)
+        if len(combined_features) != len(fighter_r_columns) + len(fighter_b_columns):
+            raise ValueError(f"Expected {len(fighter_r_columns) + len(fighter_b_columns)} features, got {len(combined_features)}")
+
+        data = [combined_features]
         data_scaled = self.scaler.transform(data)
         model = self.models[self.best_model]
         prediction = model.predict(data_scaled)

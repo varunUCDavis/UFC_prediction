@@ -12,6 +12,7 @@ def show_model_page():
     predictor = UFCModelPredictor(file_path='finalufcdataset.csv')
     predictor.load_and_prepare_data()
     predictor.test_models()
+    st.write(f'Best Model: {predictor.best_model} with Accuracy: {predictor.results[predictor.best_model]:.4f}')
 
 def show_prediction_page():
     st.title("Fight Prediction")
@@ -27,14 +28,12 @@ def show_prediction_page():
     fighter_attributes = ["Height", "Weight", "Reach"]
     
     fighters = pd.DataFrame(fighter_names)
-    attributes = pd.DataFrame(fighter_attributes)
-
-
-
-
 
     predictor = UFCModelPredictor(file_path='finalufcdataset.csv')
     predictor.load_and_prepare_data()
+    predictor.test_models(silent=True) 
+    
+
 
     # Fighter selection
     fighters = predictor.fighters
@@ -44,7 +43,7 @@ def show_prediction_page():
     with col1:
         fighter_r_name = st.selectbox("Select Red Fighter", options=fighter_names)
         fighter_r_index = fighter_names.index(fighter_r_name)
-        fighter_r = fighters.iloc[fighter_r_index].values[:].tolist()
+        fighter_r = fighters.iloc[fighter_r_index].values[:15].tolist()
 
         st.write("Adjust Red Fighter's Attributes")
         for i, attr in enumerate(fighter_r):
@@ -54,7 +53,7 @@ def show_prediction_page():
 
     with col2:
         fighter_b_index = st.selectbox("Select Blue Fighter", options=range(len(fighter_names)), format_func=lambda x: fighter_names[x])
-        fighter_b = fighters.iloc[fighter_b_index].values[15:].tolist()
+        fighter_b = fighters.iloc[fighter_b_index].values[:15].tolist()
         #st.image('path/to/blue_fighter_image.jpg')  # Replace with actual image path
 
         st.write("Adjust Blue Fighter's Attributes")
@@ -64,8 +63,12 @@ def show_prediction_page():
                     fighter_b[i] = st.slider(f'Attribute {fighter_attributes[i]}', min_value=0, max_value=100, value=int(attr), key=f'blue_{i}')
 
     if st.button('Predict Winner'):
-        winner = predictor.predict_winner(fighter_r, fighter_b)
-        st.write(f'The predicted winner is: {winner}')
+        combined_features = fighter_r + fighter_b  # Ensure we have 30 features
+        if len(combined_features) == 30:
+            winner = predictor.predict_winner(fighter_r, fighter_b)
+            st.write(f'The predicted winner is: {winner}')
+        else:
+            st.write(f"Error: Combined features length is {len(combined_features)}, expected 30.")
 
 def main():
     # Navigation bar
